@@ -75,12 +75,12 @@ for year in range(2010, 2022):
                         annee_emm)][int(type_log)] = count
 
 # Sauvegarde des données
-os.makedirs('results', exist_ok=True)
+os.makedirs('results/melun', exist_ok=True)
 
-with open('results/fioul_par_annee_emmenagement.json', 'w', encoding='utf-8') as f:
+with open('results/melun/fioul_par_annee_emmenagement.json', 'w', encoding='utf-8') as f:
     json.dump(fioul_par_annee_emmenagement, f, indent=2, ensure_ascii=False)
 
-with open('results/fioul_par_type_logement.json', 'w', encoding='utf-8') as f:
+with open('results/melun/fioul_par_type_logement.json', 'w', encoding='utf-8') as f:
     json.dump(fioul_par_type_logement, f, indent=2, ensure_ascii=False)
 
 # =============================================================================
@@ -261,6 +261,6 @@ if 2021 in fioul_par_type_logement:
                        100) if total_fioul_2021 > 0 else 0
         print(f"  {type_name}: {count:.0f} logements ({pourcentage:.1f}%)")
 
-print("\nDonnées sauvegardées dans le dossier 'results/' :")
+print("\nDonnées sauvegardées dans le dossier 'results/melun' :")
 print("- fioul_par_annee_emmenagement.json")
 print("- fioul_par_type_logement.json")
