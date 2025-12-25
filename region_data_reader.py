@@ -9,6 +9,8 @@ plt.style.use('seaborn-v0_8')
 zone = "A"
 results_dir = f'results/{zone}'
 
+os.makedirs(results_dir, exist_ok=True)
+
 FIRST_YEAR = 2010
 LAST_YEAR = 2022
 
@@ -50,24 +52,27 @@ for year_data in fioul_par_annee_emmenagement.values():
 all_annees_emm = sorted([a for a in all_annees_emm if a >= 1950])
 
 df_fioul_emm_cumul = pd.DataFrame(index=all_annees_emm)
-for year in range(FIRST_YEAR, LAST_YEAR):
+
+for year in range(FIRST_YEAR, LAST_YEAR + 1):
     year_data = fioul_par_annee_emmenagement.get(year, {})
     counts = [year_data.get(annee, 0) for annee in all_annees_emm]
     df_fioul_emm_cumul[year] = counts
 
+# graph 1: heatmap
 plt.figure(figsize=(16, 10))
 plt.imshow(df_fioul_emm_cumul.T, cmap='YlOrRd', aspect='auto',
-           extent=[min(all_annees_emm), max(all_annees_emm), LAST_YEAR - 1, FIRST_YEAR])
+           extent=[min(all_annees_emm), max(all_annees_emm), LAST_YEAR, FIRST_YEAR])
 plt.colorbar(label='Nombre de logements au fioul (pondéré)')
 plt.xlabel('Année d\'emménagement')
 plt.ylabel('Année de l\'enquête')
-plt.title(
-    f'Logements au fioul par année d\'emménagement\n(Zone {zone}, {FIRST_YEAR}-{LAST_YEAR - 1})', fontsize=14)
+plt.title(f'Logements au fioul par année d\'emménagement\n(Zone {zone}, {FIRST_YEAR}-{LAST_YEAR})', fontsize=14)
 plt.gca().invert_yaxis()
 plt.tight_layout()
+plt.savefig(f"{results_dir}/heatmap_annee_emmenagement.png", bbox_inches='tight', dpi=300)
 plt.show()
 
-current_analysis_year = LAST_YEAR - 1
+# graph 2 : bar chart derniere annee
+current_analysis_year = LAST_YEAR
 if current_analysis_year in fioul_par_annee_emmenagement:
     data_last_year = fioul_par_annee_emmenagement[current_analysis_year]
     annees_emm_last = sorted(
@@ -77,20 +82,21 @@ if current_analysis_year in fioul_par_annee_emmenagement:
     plt.figure(figsize=(14, 8))
     plt.bar(annees_emm_last, counts_last, alpha=0.7,
             color='red', edgecolor='darkred')
-    plt.title(
-        f'Logements au fioul par année d\'emménagement\n(Enquête {current_analysis_year} - Zone {zone})', fontsize=14)
+    plt.title(f'Logements au fioul par année d\'emménagement\n(Enquête {current_analysis_year} - Zone {zone})', fontsize=14)
     plt.xlabel('Année d\'emménagement')
     plt.ylabel('Nombre de logements au fioul (pondéré)')
     plt.grid(True, alpha=0.3, axis='y')
     plt.xticks(rotation=45)
     plt.tight_layout()
+    plt.savefig(f"{results_dir}/bar_distribution_{current_analysis_year}.png", bbox_inches='tight', dpi=300)
     plt.show()
 
+# graph 3 : evolution par decennie
 decennies = ['1950-1959', '1960-1969', '1970-1979', '1980-1989',
-             '1990-1999', '2000-2009', '2010-2019', '2020-2021']
+             '1990-1999', '2000-2009', '2010-2019', '2020-2022']
 
 fioul_par_decennie = {dec: [] for dec in decennies}
-years_survey = list(range(FIRST_YEAR, LAST_YEAR))
+years_survey = list(range(FIRST_YEAR, LAST_YEAR + 1))
 
 for year in years_survey:
     data = fioul_par_annee_emmenagement.get(year, {})
@@ -105,8 +111,7 @@ for decennie in decennies:
     plt.plot(years_survey, fioul_par_decennie[decennie],
              marker='o', linewidth=2, label=decennie)
 
-plt.title(
-    f'Évolution des logements au fioul par décennie d\'emménagement\n(Zone {zone}, {FIRST_YEAR}-{LAST_YEAR - 1})', fontsize=14)
+plt.title(f'Évolution des logements au fioul par décennie d\'emménagement\n(Zone {zone}, {FIRST_YEAR}-{LAST_YEAR})', fontsize=14)
 plt.xlabel('Année de l\'enquête')
 plt.ylabel('Nombre de logements au fioul (pondéré)')
 plt.grid(True, alpha=0.3)
@@ -114,6 +119,7 @@ plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left',
            title='Décennie d\'emménagement')
 plt.xticks(years_survey)
 plt.tight_layout()
+plt.savefig(f"{results_dir}/evolution_par_decennie.png", bbox_inches='tight', dpi=300)
 plt.show()
 
 print("\n" + "=" * 60)
@@ -123,26 +129,30 @@ print("=" * 60)
 fioul_par_type_combined = {}
 for type_log in TYPES_LOGEMENTS.keys():
     fioul_par_type_combined[type_log] = []
-    for year in range(FIRST_YEAR, LAST_YEAR):
+    
+    for year in range(FIRST_YEAR, LAST_YEAR + 1):
         data = fioul_par_type_logement.get(year, {})
         fioul_par_type_combined[type_log].append(data.get(type_log, 0))
 
+# graph 4 : evolution par type
 plt.figure(figsize=(12, 8))
 for type_log, counts in fioul_par_type_combined.items():
     type_name = TYPES_LOGEMENTS[type_log]
-    plt.plot(range(FIRST_YEAR, LAST_YEAR), counts, marker='o', linewidth=2,
+
+    plt.plot(range(FIRST_YEAR, LAST_YEAR + 1), counts, marker='o', linewidth=2,
              label=type_name, markersize=6)
 
-plt.title(
-    f'Évolution des logements au fioul par type de logement\n(Zone {zone}, {FIRST_YEAR}-{LAST_YEAR - 1})', fontsize=14)
+plt.title(f'Évolution des logements au fioul par type de logement\n(Zone {zone}, {FIRST_YEAR}-{LAST_YEAR})', fontsize=14)
 plt.xlabel('Année')
 plt.ylabel('Nombre de logements au fioul (pondéré)')
 plt.grid(True, alpha=0.3)
 plt.legend()
-plt.xticks(range(FIRST_YEAR, LAST_YEAR))
+plt.xticks(range(FIRST_YEAR, LAST_YEAR + 1))
 plt.tight_layout()
+plt.savefig(f"{results_dir}/evolution_par_type_logement.png", bbox_inches='tight', dpi=300)
 plt.show()
 
+# graph 5 : pie chart derniere anee
 if current_analysis_year in fioul_par_type_logement:
     data_last_types = fioul_par_type_logement[current_analysis_year]
     labels = [TYPES_LOGEMENTS.get(k, f"Type {k}")
@@ -163,24 +173,27 @@ if current_analysis_year in fioul_par_type_logement:
               fontsize=14)
     plt.axis('equal')
     plt.tight_layout()
+    plt.savefig(f"{results_dir}/repartition_type_{current_analysis_year}.png", bbox_inches='tight', dpi=300)
     plt.show()
 
+# graph 6 : stackplot
 df_fioul_types = pd.DataFrame(fioul_par_type_combined)
-df_fioul_types.index = range(FIRST_YEAR, LAST_YEAR)
+
+df_fioul_types.index = range(FIRST_YEAR, LAST_YEAR + 1)
 df_fioul_types.columns = [TYPES_LOGEMENTS[col]
                           for col in df_fioul_types.columns]
 
 plt.figure(figsize=(14, 8))
 plt.stackplot(df_fioul_types.index, df_fioul_types.T,
               labels=df_fioul_types.columns, alpha=0.8)
-plt.title(
-    f'Évolution cumulée des logements au fioul par type de logement\n(Zone {zone}, {FIRST_YEAR}-{LAST_YEAR - 1})', fontsize=14)
+plt.title(f'Évolution cumulée des logements au fioul par type de logement\n(Zone {zone}, {FIRST_YEAR}-{LAST_YEAR})', fontsize=14)
 plt.xlabel('Année')
 plt.ylabel('Nombre de logements au fioul (pondéré)')
 plt.grid(True, alpha=0.3)
 plt.legend(title='Type de logement')
-plt.xticks(range(FIRST_YEAR, LAST_YEAR))
+plt.xticks(range(FIRST_YEAR, LAST_YEAR + 1))
 plt.tight_layout()
+plt.savefig(f"{results_dir}/evolution_cumulee_type.png", bbox_inches='tight', dpi=300)
 plt.show()
 
 print("\n" + "=" * 60)
@@ -189,8 +202,7 @@ print("=" * 60)
 
 total_fioul_last = sum(fioul_par_type_logement[current_analysis_year].values(
 )) if current_analysis_year in fioul_par_type_logement else 0
-print(
-    f"Nombre total de logements au fioul en {current_analysis_year} : {total_fioul_last:.0f}")
+print(f"Nombre total de logements au fioul en {current_analysis_year} : {total_fioul_last:.0f}")
 
 if current_analysis_year in fioul_par_type_logement:
     print(f"\nRépartition par type de logement en {current_analysis_year} :")
